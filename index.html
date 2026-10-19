@@ -206,7 +206,7 @@ button {
 .customrow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   margin-top: 7px;
 }
 
@@ -217,8 +217,31 @@ button {
   white-space: nowrap;
 }
 
+#clearAmount {
+  flex: 0 0 29px;
+  width: 29px;
+  height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #8e3d0a;
+  border-radius: 8px;
+  background: var(--orange-dark);
+  color: white;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+#clearAmount:active {
+  background: #a94709;
+  transform: scale(0.94);
+}
+
 #amount {
-  width: 100%;
+  flex: 1 1 auto;
+  width: 0;
   min-width: 0;
   background: var(--panel);
   color: var(--cream);
@@ -476,6 +499,12 @@ button {
     padding: 5px 7px;
   }
 
+  #clearAmount {
+    flex-basis: 27px;
+    width: 27px;
+    height: 27px;
+  }
+
   .notesbox {
     padding: 6px 8px;
   }
@@ -571,6 +600,9 @@ button {
 
   <div class="customrow">
     <label for="amount">Personalizza:</label>
+    <button type="button" id="clearAmount"
+      aria-label="Cancella importo personalizzato"
+      title="Cancella importo">×</button>
     <input id="amount" type="number" inputmode="numeric"
       min="0" max="999999" value="1000" placeholder="Importo">
   </div>
@@ -664,25 +696,39 @@ function selectPreset(n) {
   save();
 }
 
+function updatePresetSelection() {
+  const value = $('amount').value;
+
+  document.querySelectorAll('[data-amount]').forEach(button => {
+    button.classList.toggle(
+      'active',
+      value !== '' && Number(button.dataset.amount) === selectedAmount()
+    );
+  });
+}
+
 document.querySelectorAll('[data-amount]').forEach(button => {
   button.addEventListener('click', () => {
     selectPreset(Number(button.dataset.amount));
   });
 });
 
+/* Aggiornamento dell'importo personalizzato e dei preset attivi. */
 $('amount').addEventListener('input', () => {
-  document.querySelectorAll('[data-amount]').forEach(button => {
-    button.classList.toggle(
-      'active',
-      Number(button.dataset.amount) === selectedAmount()
-    );
-  });
-
+  updatePresetSelection();
   save();
 });
 
-/* MODIFICA: svuota il campo LP appena viene selezionato.
-   Se si esce senza digitare, ripristina il valore precedente. */
+/* Nuovo comando: cancella l'importo con un tocco e riporta il cursore
+   nel campo, pronto per inserire il valore successivo. */
+$('clearAmount').addEventListener('click', () => {
+  $('amount').value = '';
+  updatePresetSelection();
+  save();
+  $('amount').focus();
+});
+
+/* Modifica manuale dei Life Points. */
 document.querySelectorAll('.lp').forEach(input => {
   input.addEventListener('focus', () => {
     previousLPValues[input.id] = input.value;
@@ -892,12 +938,7 @@ try {
     if (data.amount !== undefined) $('amount').value = data.amount;
     if (data.notes !== undefined) $('notes').value = data.notes;
 
-    document.querySelectorAll('[data-amount]').forEach(button => {
-      button.classList.toggle(
-        'active',
-        Number(button.dataset.amount) === selectedAmount()
-      );
-    });
+    updatePresetSelection();
   }
 } catch (e) {}
 
