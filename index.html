@@ -678,7 +678,17 @@ $('amount').addEventListener('input', () => {
   save();
 });
 
+/* Seleziona automaticamente tutti i Life Points al tocco,
+   così il nuovo valore sostituisce quello precedente. */
 document.querySelectorAll('.lp').forEach(input => {
+  input.addEventListener('focus', () => {
+    input.select();
+  });
+
+  input.addEventListener('click', () => {
+    input.select();
+  });
+
   input.addEventListener('change', () => {
     remember();
     setLP(input.id, input.value);
