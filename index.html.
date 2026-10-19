@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b7aa9a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Duel Assistant">
+<title>Duel Assistant</title>
+<style>
+:root {
+  --taupe:#b7aa9a;
+  --dark:#302c29;
+  --dark2:#211e1c;
+  --orange:#f5822a;
+  --orange2:#c85b10;
+  --cream:#f5ede2;
+  --muted:#c2b8ac;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  min-height:100vh;
+  min-height:100dvh;
+  background:var(--taupe);
+  color:var(--dark);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding: max(12px,env(safe-area-inset-top)) 12px
+           max(12px,env(safe-area-inset-bottom));
+}
+button,input,textarea {font:inherit}
+button {cursor:pointer;touch-action:manipulation}
+.app {max-width:700px;margin:auto;display:flex;flex-direction:column;gap:12px}
+header {display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 2px}
+.brand {display:flex;align-items:center;gap:10px}
+.logo {font-size:35px;color:var(--orange);font-weight:900}
+h1 {font-size:clamp(17px,4.8vw,25px);letter-spacing:2px;margin:0}
+.subtitle {font-size:10px;letter-spacing:3px;margin-top:4px}
+.iconbtn {background:#a89b8b;border:1px solid #948777;border-radius:14px;padding:10px;color:var(--dark);font-size:20px}
+.players {display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.player {background:linear-gradient(145deg,#38322e,var(--dark2));border:2px solid #77695b;border-top:5px solid var(--orange);border-radius:20px;padding:10px 8px;color:var(--cream);min-width:0}
+.player h2 {color:var(--orange);font-size:clamp(12px,3.4vw,17px);text-align:center;margin:5px 0 12px;letter-spacing:1px}
+.lp {width:100%;background:#171513;border:2px solid #554b43;border-radius:13px;color:var(--cream);font-size:clamp(27px,8vw,43px);font-weight:800;text-align:center;padding:13px 0;letter-spacing:1px}
+.edit-hint {font-size:11px;text-align:center;color:var(--muted);margin:9px 0}
+.controls {display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn {border:2px solid var(--orange2);border-radius:13px;background:transparent;color:var(--orange);font-weight:750;padding:10px 2px;min-height:43px}
+.btn.big {font-size:29px;min-height:55px;color:var(--cream)}
+.btn.plus {background:linear-gradient(145deg,#ff963f,#d9600d);border-color:#ff9b45}
+.btn.half,.btn.reset {font-size:13px}
+.amountbox,.notesbox {background:#c8bbab;border:1px solid #d9cdbf;border-radius:18px;padding:12px}
+.section-title {font-weight:850;font-size:14px;letter-spacing:1.3px;margin:0 0 10px}
+.accent-line {height:3px;width:55%;background:var(--orange);border-radius:3px;margin:0 0 12px}
+.presets {display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.preset {background:var(--dark);color:var(--cream);border:2px solid #74675b;border-radius:10px;padding:10px 0;font-weight:700;font-size:13px}
+.preset.active {background:var(--orange2);border-color:#ffad65}
+.customrow {display:flex;align-items:center;gap:8px;margin-top:10px}
+.customrow label {font-size:13px;font-weight:700;white-space:nowrap}
+#amount {width:100%;min-width:0;background:var(--dark);color:var(--cream);border:2px solid var(--orange);border-radius:10px;padding:11px;font-size:17px}
+.notes-head {display:flex;align-items:center;justify-content:space-between;gap:8px}
+#notes {width:100%;min-height:135px;resize:vertical;background:var(--dark);color:var(--cream);border:2px solid #77695b;border-radius:13px;padding:13px;font-size:15px;line-height:1.5}
+#notes::placeholder {color:#a99e93}
+.newduel {width:100%;border:2px solid #ad4b0c;border-radius:15px;padding:15px;background:linear-gradient(110deg,#ff963f,#d9600d);color:white;font-weight:850;letter-spacing:2px;font-size:15px}
+.footer {text-align:center;font-size:10px;color:#51483f;padding:0 0 4px}
+@media (max-height:760px) {
+  .app {gap:8px}
+  .player {padding:7px}
+  .lp {padding:8px 0}
+  .btn.big {min-height:43px}
+  #notes {min-height:90px}
+  .amountbox,.notesbox {padding:9px}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div class="brand">
+    <div class="logo">◇</div>
+    <div><h1>DUEL ASSISTANT</h1><div class="subtitle">LIFE POINTS &amp; NOTES</div></div>
+  </div>
+  <button class="iconbtn" id="undo" aria-label="Annulla ultima operazione">↶</button>
+</header>
+
+<section class="players">
+  <article class="player">
+    <h2>AVVERSARIO</h2>
+    <input class="lp" id="lp1" type="number" inputmode="numeric" min="0" max="999999" value="8000" aria-label="Life Points avversario">
+    <div class="edit-hint">✎ Tocca per modificare</div>
+    <div class="controls">
+      <button class="btn big" data-player="1" data-sign="-">−</button>
+      <button class="btn big plus" data-player="1" data-sign="+">+</button>
+      <button class="btn half" data-action="half" data-player="1">½ LP</button>
+      <button class="btn reset" data-action="reset" data-player="1">Reset</button>
+    </div>
+  </article>
+  <article class="player">
+    <h2>TU</h2>
+    <input class="lp" id="lp2" type="number" inputmode="numeric" min="0" max="999999" value="8000" aria-label="I tuoi Life Points">
+    <div class="edit-hint">✎ Tocca per modificare</div>
+    <div class="controls">
+      <button class="btn big" data-player="2" data-sign="-">−</button>
+      <button class="btn big plus" data-player="2" data-sign="+">+</button>
+      <button class="btn half" data-action="half" data-player="2">½ LP</button>
+      <button class="btn reset" data-action="reset" data-player="2">Reset</button>
+    </div>
+  </article>
+</section>
+
+<section class="amountbox">
+  <h2 class="section-title">IMPORTO OPERAZIONI</h2>
+  <div class="accent-line"></div>
+  <div class="presets">
+    <button class="preset" data-amount="100">100</button>
+    <button class="preset" data-amount="500">500</button>
+    <button class="preset active" data-amount="1000">1000</button>
+    <button class="preset" data-amount="2000">2000</button>
+  </div>
+  <div class="customrow">
+    <label for="amount">Personalizza:</label>
+    <input id="amount" type="number" inputmode="numeric" min="0" max="999999" value="1000" placeholder="Importo">
+  </div>
+</section>
+
+<section class="notesbox">
+  <div class="notes-head">
+    <h2 class="section-title">NOTE DEL DUELLO</h2>
+    <button class="iconbtn" id="clearNotes" aria-label="Cancella note">▤</button>
+  </div>
+  <div class="accent-line"></div>
+  <textarea id="notes" placeholder="Scrivi effetti, carte, calcoli o promemoria..."></textarea>
+</section>
+
+<button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
+<div class="footer">I tuoi dati vengono salvati su questo dispositivo.</div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let amount = 1000;
+let history = [];
+let timer;
+function save() {
+  localStorage.setItem('duel-assistant-data', JSON.stringify({
+    lp1:$('lp1').value,lp2:$('lp2').value,
+    amount:$('amount').value,notes:$('notes').value
+  }));
+}
+function remember() {
+  history.push({lp1:$('lp1').value,lp2:$('lp2').value});
+  if(history.length>30) history.shift();
+}
+function setLP(id,value) {
+  $(id).value = Math.max(0,Math.min(999999,Math.floor(Number(value)||0)));
+  save();
+}
+function selectedAmount() {
+  return Math.max(0,Math.floor(Number($('amount').value)||0));
+}
+function selectPreset(n) {
+  $('amount').value=n;
+  document.querySelectorAll('.preset').forEach(b=>{
+    b.classList.toggle('active',Number(b.dataset.amount)===n);
+  });
+  save();
+}
+document.querySelectorAll('.preset').forEach(b=>{
+  b.addEventListener('click',()=>selectPreset(Number(b.dataset.amount)));
+});
+$('amount').addEventListener('input',()=>{
+  document.querySelectorAll('.preset').forEach(b=>{
+    b.classList.toggle('active',Number(b.dataset.amount)===selectedAmount());
+  });
+  save();
+});
+document.querySelectorAll('.lp').forEach(input=>{
+  input.addEventListener('change',()=>{remember();setLP(input.id,input.value)});
+});
+document.querySelectorAll('[data-player]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const id='lp'+b.dataset.player;
+    remember();
+    if(b.dataset.action==='half') setLP(id,Math.floor(Number($(id).value)/2));
+    else if(b.dataset.action==='reset') setLP(id,8000);
+    else setLP(id,Number($(id).value)+(b.dataset.sign==='+'?selectedAmount():-selectedAmount()));
+  });
+});
+$('undo').addEventListener('click',()=>{
+  const previous=history.pop();
+  if(!previous){alert('Nessuna operazione da annullare.');return;}
+  $('lp1').value=previous.lp1;$('lp2').value=previous.lp2;save();
+});
+$('notes').addEventListener('input',()=>{
+  clearTimeout(timer);timer=setTimeout(save,150);
+});
+$('clearNotes').addEventListener('click',()=>{
+  if(confirm('Cancellare tutte le note?')){$('notes').value='';save();}
+});
+$('newDuel').addEventListener('click',()=>{
+  if(confirm('Nuovo duello? I Life Points torneranno a 8000 e le note verranno cancellate.')){
+    remember();$('lp1').value=8000;$('lp2').value=8000;$('notes').value='';save();
+  }
+});
+try {
+  const d=JSON.parse(localStorage.getItem('duel-assistant-data')||'null');
+  if(d){
+    if(d.lp1!==undefined)$('lp1').value=d.lp1;
+    if(d.lp2!==undefined)$('lp2').value=d.lp2;
+    if(d.amount!==undefined)$('amount').value=d.amount;
+    if(d.notes!==undefined)$('notes').value=d.notes;
+    selectPreset(selectedAmount());
+  }
+} catch(e) {}
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
