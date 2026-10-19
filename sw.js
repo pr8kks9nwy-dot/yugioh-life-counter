@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'duel-assistant-v2';
+const CACHE_NAME = 'duel-assistant-v3';
 const APP_FILES = ['./', './index.html'];
 
 self.addEventListener('install', event => {
