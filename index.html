@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Duel Assistant">
-  <link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" type="image/png" href="./icon-180.png">
 <title>Duel Assistant</title>
 
 <style>
@@ -287,18 +288,63 @@ button {
   color: #a99e93;
 }
 
-.newduel {
+/* Barra inferiore con tre pulsanti */
+.bottom-actions {
   flex: 0 0 auto;
-  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+}
+
+.newduel {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
   min-height: 43px;
   border: 2px solid #ad4b0c;
   border-radius: 12px;
-  padding: 9px;
+  padding: 8px 5px;
   background: linear-gradient(110deg, #ff963f, #d9600d);
   color: white;
   font-weight: 850;
-  letter-spacing: 1.5px;
-  font-size: 14px;
+  letter-spacing: 1px;
+  font-size: 13px;
+}
+
+.random-btn {
+  flex: 0 0 46px;
+  width: 46px;
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--orange);
+  border: 2px solid var(--orange-dark);
+  border-radius: 12px;
+  padding: 0;
+  font-size: 25px;
+}
+
+.random-btn:active {
+  background: var(--orange-dark);
+  transform: scale(0.96);
+}
+
+/* Moneta con le due facce riconoscibili */
+.coin-icon {
+  width: 27px;
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px double var(--orange);
+  border-radius: 50%;
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  transform: rotate(-15deg);
 }
 
 @media (max-height: 700px) {
@@ -346,9 +392,20 @@ button {
     padding: 6px 8px;
   }
 
-  .newduel {
+  .newduel,
+  .random-btn {
     min-height: 36px;
-    padding: 6px;
+  }
+
+  .random-btn {
+    flex-basis: 40px;
+    width: 40px;
+    font-size: 22px;
+  }
+
+  .coin-icon {
+    width: 24px;
+    height: 24px;
   }
 }
 </style>
@@ -396,7 +453,8 @@ button {
     <button class="preset" data-amount="500">500</button>
     <button class="preset active" data-amount="1000">1000</button>
     <button class="preset" data-amount="3000">3000</button>
-    <button class="preset undo" id="undo" aria-label="Annulla ultima operazione">↶</button>
+    <button class="preset undo" id="undo"
+      aria-label="Annulla ultima operazione">↶</button>
   </div>
 
   <div class="customrow">
@@ -409,14 +467,29 @@ button {
 <section class="notesbox">
   <div class="notes-head">
     <h2 class="section-title">NOTE DEL DUELLO</h2>
-    <button class="iconbtn" id="clearNotes" aria-label="Cancella note">⌫</button>
+    <button class="iconbtn" id="clearNotes"
+      aria-label="Cancella note">⌫</button>
   </div>
   <div class="accent-line"></div>
   <textarea id="notes"
     placeholder="Scrivi effetti, carte, calcoli o promemoria..."></textarea>
 </section>
 
-<button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
+<div class="bottom-actions">
+  <button class="newduel" id="newDuel">
+    ↻ &nbsp; NUOVO DUELLO
+  </button>
+
+  <button class="random-btn" id="coinFlip"
+    aria-label="Lancia una moneta"
+    title="Lancia una moneta">
+    <span class="coin-icon" aria-hidden="true">T/C</span>
+  </button>
+
+  <button class="random-btn" id="rollDice"
+    aria-label="Lancia un dado"
+    title="Lancia un dado">⚄</button>
+</div>
 
 </main>
 
@@ -556,6 +629,18 @@ $('newDuel').addEventListener('click', () => {
     $('notes').value = '';
     save();
   }
+});
+
+/* Lancio casuale della moneta: TESTA o CROCE */
+$('coinFlip').addEventListener('click', () => {
+  const result = Math.random() < 0.5 ? 'TESTA' : 'CROCE';
+  alert('LANCIO MONETA\n\n' + result);
+});
+
+/* Lancio casuale di un dado a sei facce */
+$('rollDice').addEventListener('click', () => {
+  const result = Math.floor(Math.random() * 6) + 1;
+  alert('LANCIO DADO\n\nRisultato: ' + result);
 });
 
 try {
