@@ -288,7 +288,7 @@ button {
   color: #a99e93;
 }
 
-/* Barra inferiore compatta */
+/* Barra inferiore */
 .bottom-actions {
   flex: 0 0 auto;
   display: flex;
@@ -331,7 +331,6 @@ button {
   transform: scale(0.96);
 }
 
-/* Simbolo della moneta con le due facce */
 .coin-icon {
   width: 27px;
   height: 27px;
@@ -347,7 +346,7 @@ button {
   transform: rotate(-15deg);
 }
 
-/* Finestra personalizzata di moneta e dado */
+/* Finestre di moneta e dado */
 .random-overlay {
   position: fixed;
   inset: 0;
@@ -382,6 +381,15 @@ button {
   letter-spacing: 1px;
   overflow-wrap: anywhere;
   margin: 8px 0 20px;
+  opacity: 1;
+  transform: scale(1) rotate(0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.random-result.rolling {
+  opacity: 0;
+  transform: scale(0.55) rotate(-30deg);
+  transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
 .random-result .coin-icon {
@@ -421,6 +429,10 @@ button {
   background: linear-gradient(145deg, #ff963f, #d9600d);
   color: #fff;
   border-color: #ff9b45;
+}
+
+.random-actions button:disabled {
+  opacity: 0.7;
 }
 
 @media (max-height: 700px) {
@@ -502,6 +514,13 @@ button {
     font-size: 70px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .random-result,
+  .random-result.rolling {
+    transition: none;
+  }
+}
 </style>
 </head>
 
@@ -547,8 +566,7 @@ button {
     <button class="preset" data-amount="500">500</button>
     <button class="preset active" data-amount="1000">1000</button>
     <button class="preset" data-amount="3000">3000</button>
-    <button class="preset undo" id="undo"
-      aria-label="Annulla ultima operazione">↶</button>
+    <button class="preset undo" id="undo" aria-label="Annulla ultima operazione">↶</button>
   </div>
 
   <div class="customrow">
@@ -561,8 +579,7 @@ button {
 <section class="notesbox">
   <div class="notes-head">
     <h2 class="section-title">NOTE DEL DUELLO</h2>
-    <button class="iconbtn" id="clearNotes"
-      aria-label="Cancella note">⌫</button>
+    <button class="iconbtn" id="clearNotes" aria-label="Cancella note">⌫</button>
   </div>
   <div class="accent-line"></div>
   <textarea id="notes"
@@ -570,9 +587,7 @@ button {
 </section>
 
 <div class="bottom-actions">
-  <button class="newduel" id="newDuel">
-    ↻ &nbsp; NUOVO DUELLO
-  </button>
+  <button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
 
   <button class="random-btn" id="coinFlip"
     aria-label="Lancia una moneta" title="Lancia una moneta">
@@ -591,6 +606,7 @@ const STORAGE_KEY = 'duel-assistant-data';
 
 let history = [];
 let saveTimer;
+let rollTimer = null;
 
 function currentState() {
   return {
@@ -685,7 +701,6 @@ document.querySelectorAll('[data-player]').forEach(button => {
       const delta = selectedAmount();
       const next = current +
         (button.dataset.sign === '+' ? delta : -delta);
-
       setLP(id, next);
     }
   });
@@ -723,7 +738,7 @@ $('newDuel').addEventListener('click', () => {
   }
 });
 
-/* Finestra personalizzata con rilancio e chiusura */
+/* Finestra casuale con animazione a ogni rilancio */
 function openRandomDialog(type) {
   const overlay = document.createElement('div');
   overlay.className = 'random-overlay';
@@ -751,7 +766,9 @@ function openRandomDialog(type) {
   const close = document.createElement('button');
   close.textContent = 'CHIUDI';
 
-  function roll() {
+  let rolling = false;
+
+  function showResult() {
     result.replaceChildren();
 
     if (type === 'coin') {
@@ -760,10 +777,7 @@ function openRandomDialog(type) {
 
       coin.className = 'coin-icon';
       coin.textContent = isHeads ? 'T' : 'C';
-      coin.setAttribute(
-        'aria-label',
-        isHeads ? 'Testa' : 'Croce'
-      );
+      coin.setAttribute('aria-label', isHeads ? 'Testa' : 'Croce');
 
       result.appendChild(coin);
     } else {
@@ -779,22 +793,48 @@ function openRandomDialog(type) {
     }
   }
 
-  reroll.addEventListener('click', roll);
+  function roll() {
+    if (rolling) return;
 
-  close.addEventListener('click', () => {
+    rolling = true;
+    reroll.disabled = true;
+    result.classList.add('rolling');
+
+    if (rollTimer !== null) {
+      clearTimeout(rollTimer);
+    }
+
+    rollTimer = setTimeout(() => {
+      showResult();
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          result.classList.remove('rolling');
+          reroll.disabled = false;
+          rolling = false;
+          rollTimer = null;
+        });
+      });
+    }, 350);
+  }
+
+  function closeDialog() {
+    if (rollTimer !== null) {
+      clearTimeout(rollTimer);
+      rollTimer = null;
+    }
     overlay.remove();
-  });
+  }
+
+  reroll.addEventListener('click', roll);
+  close.addEventListener('click', closeDialog);
 
   overlay.addEventListener('click', event => {
-    if (event.target === overlay) {
-      overlay.remove();
-    }
+    if (event.target === overlay) closeDialog();
   });
 
   dialog.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      overlay.remove();
-    }
+    if (event.key === 'Escape') closeDialog();
   });
 
   actions.append(reroll, close);
@@ -802,7 +842,7 @@ function openRandomDialog(type) {
   overlay.appendChild(dialog);
   document.body.appendChild(overlay);
 
-  roll();
+  showResult();
   close.focus();
 }
 
@@ -816,9 +856,7 @@ $('rollDice').addEventListener('click', () => {
 
 /* Ripristino dei dati salvati */
 try {
-  const data = JSON.parse(
-    localStorage.getItem(STORAGE_KEY) || 'null'
-  );
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
 
   if (data) {
     if (data.lp1 !== undefined) $('lp1').value = data.lp1;
@@ -835,7 +873,7 @@ try {
   }
 } catch (e) {}
 
-/* Service worker per la modalità offline */
+/* Service worker per uso offline */
 if ('serviceWorker' in navigator &&
     location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
