@@ -608,6 +608,9 @@ let history = [];
 let saveTimer;
 let rollTimer = null;
 
+/* Memorizza il valore precedente durante la modifica manuale degli LP. */
+const previousLPValues = {};
+
 function currentState() {
   return {
     lp1: $('lp1').value,
@@ -678,15 +681,30 @@ $('amount').addEventListener('input', () => {
   save();
 });
 
-/* Seleziona automaticamente tutti i Life Points al tocco,
-   così il nuovo valore sostituisce quello precedente. */
+/* MODIFICA: svuota il campo LP appena viene selezionato.
+   Se si esce senza digitare, ripristina il valore precedente. */
 document.querySelectorAll('.lp').forEach(input => {
   input.addEventListener('focus', () => {
-    input.select();
+    previousLPValues[input.id] = input.value;
+    input.value = '';
   });
 
-  input.addEventListener('click', () => {
-    input.select();
+  input.addEventListener('input', () => {
+    if (input.value !== '') {
+      input.value = input.value.replace(/[^0-9]/g, '').slice(0, 6);
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    if (input.value.trim() === '') {
+      input.value = previousLPValues[input.id] || '0';
+    } else {
+      input.value = String(
+        Math.max(0, Math.min(999999, Math.floor(Number(input.value) || 0)))
+      );
+    }
+
+    save();
   });
 
   input.addEventListener('change', () => {
