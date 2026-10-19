@@ -2,884 +2,914 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#b7aa9a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Duel Assistant">
-<link rel="apple-touch-icon" href="./icon-180.png">
-<link rel="icon" type="image/png" href="./icon-180.png">
-<title>Duel Assistant</title>
-
-<style>
-:root {
-  --taupe: #b7aa9a;
-  --panel: #302c29;
-  --panel-dark: #211e1c;
-  --orange: #f5822a;
-  --orange-dark: #c85b10;
-  --cream: #f5ede2;
-  --muted: #c2b8ac;
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  height: 100%;
-  background: var(--taupe);
-}
-
-body {
-  margin: 0;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
-  background: var(--taupe);
-  color: var(--panel);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-button, input, textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.app {
-  width: 100%;
-  max-width: 700px;
-  height: 100%;
-  margin: 0 auto;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  overflow: hidden;
-}
-
-.players {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  flex: 0 0 auto;
-  min-height: 0;
-}
-
-.player {
-  min-width: 0;
-  padding: 9px 7px;
-  border: 2px solid #77695b;
-  border-top: 4px solid var(--orange);
-  border-radius: 17px;
-  background: linear-gradient(145deg, #38322e, var(--panel-dark));
-  color: var(--cream);
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.player h2 {
-  color: var(--orange);
-  font-size: clamp(12px, 3.4vw, 17px);
-  text-align: center;
-  margin: 1px 0 3px;
-  letter-spacing: 1px;
-}
-
-.lp {
-  width: 100%;
-  min-width: 0;
-  background: #171513;
-  border: 2px solid #554b43;
-  border-radius: 12px;
-  color: var(--cream);
-  font-size: clamp(25px, 7.5vw, 43px);
-  font-weight: 800;
-  text-align: center;
-  padding: 9px 0;
-  letter-spacing: 1px;
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.lp::-webkit-inner-spin-button,
-.lp::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.edit-hint {
-  font-size: 11px;
-  text-align: center;
-  color: var(--muted);
-  margin: 0;
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-top: auto;
-}
-
-.btn {
-  min-width: 0;
-  min-height: 37px;
-  border: 2px solid var(--orange-dark);
-  border-radius: 11px;
-  background: transparent;
-  color: var(--orange);
-  font-weight: 750;
-  padding: 6px 2px;
-}
-
-.btn.big {
-  min-height: 45px;
-  font-size: 27px;
-  color: var(--cream);
-}
-
-.btn.plus {
-  background: linear-gradient(145deg, #ff963f, #d9600d);
-  border-color: #ff9b45;
-}
-
-.btn.half,
-.btn.reset {
-  font-size: 12px;
-}
-
-.amountbox {
-  flex: 0 0 auto;
-  padding: 8px 10px;
-  background: #c8bbab;
-  border: 1px solid #d9cdbf;
-  border-radius: 14px;
-}
-
-.section-title {
-  color: var(--orange);
-  font-weight: 850;
-  font-size: 13px;
-  letter-spacing: 1.2px;
-  margin: 0 0 5px;
-}
-
-.presets {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.preset {
-  min-width: 0;
-  min-height: 37px;
-  padding: 5px 1px;
-  background: var(--panel);
-  color: var(--cream);
-  border: 2px solid #74675b;
-  border-radius: 9px;
-  font-weight: 750;
-  font-size: clamp(10px, 3vw, 14px);
-}
-
-.preset.active {
-  background: var(--orange-dark);
-  border-color: #ffad65;
-}
-
-.preset.undo {
-  color: var(--orange);
-  border-color: var(--orange-dark);
-  font-size: 17px;
-}
-
-.customrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 7px;
-}
-
-.customrow label {
-  color: var(--panel);
-  font-size: 12px;
-  font-weight: 750;
-  white-space: nowrap;
-}
-
-#amount {
-  width: 100%;
-  min-width: 0;
-  background: var(--panel);
-  color: var(--cream);
-  border: 2px solid var(--orange);
-  border-radius: 9px;
-  padding: 7px 9px;
-  font-size: 16px;
-}
-
-.notesbox {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 8px 9px;
-  background: #c8bbab;
-  border: 1px solid #d9cdbf;
-  border-radius: 14px;
-}
-
-.notes-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
-.notes-head .section-title {
-  margin: 0 0 4px;
-}
-
-.iconbtn {
-  flex: 0 0 auto;
-  background: #a89b8b;
-  border: 1px solid #948777;
-  border-radius: 9px;
-  padding: 4px 9px;
-  color: var(--panel);
-  font-size: 18px;
-}
-
-.accent-line {
-  flex: 0 0 auto;
-  height: 3px;
-  width: 55%;
-  background: var(--orange);
-  border-radius: 3px;
-  margin: 3px 0 7px;
-}
-
-#notes {
-  flex: 1 1 auto;
-  width: 100%;
-  min-height: 0;
-  resize: none;
-  background: var(--panel);
-  color: var(--cream);
-  border: 2px solid #77695b;
-  border-radius: 11px;
-  padding: 10px;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-#notes::placeholder {
-  color: #a99e93;
-}
-
-/* Barra inferiore */
-.bottom-actions {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: stretch;
-  gap: 7px;
-}
-
-.newduel {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
-  min-height: 43px;
-  border: 2px solid #ad4b0c;
-  border-radius: 12px;
-  padding: 8px 5px;
-  background: linear-gradient(110deg, #ff963f, #d9600d);
-  color: white;
-  font-weight: 850;
-  letter-spacing: 1px;
-  font-size: 13px;
-}
-
-.random-btn {
-  flex: 0 0 46px;
-  width: 46px;
-  min-height: 43px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--panel);
-  color: var(--orange);
-  border: 2px solid var(--orange-dark);
-  border-radius: 12px;
-  padding: 0;
-  font-size: 25px;
-}
-
-.random-btn:active {
-  background: var(--orange-dark);
-  transform: scale(0.96);
-}
-
-.coin-icon {
-  width: 27px;
-  height: 27px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 3px double var(--orange);
-  border-radius: 50%;
-  color: var(--cream);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: -1px;
-  transform: rotate(-15deg);
-}
-
-/* Finestre di moneta e dado */
-.random-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.72);
-}
-
-.random-dialog {
-  width: 100%;
-  max-width: 320px;
-  padding: 24px 20px 18px;
-  border: 2px solid var(--orange-dark);
-  border-radius: 20px;
-  background: linear-gradient(145deg, #38322e, var(--panel-dark));
-  color: var(--orange);
-  text-align: center;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-}
-
-.random-result {
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--orange);
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  overflow-wrap: anywhere;
-  margin: 8px 0 20px;
-  opacity: 1;
-  transform: scale(1) rotate(0);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-.random-result.rolling {
-  opacity: 0;
-  transform: scale(0.55) rotate(-30deg);
-  transition: opacity 0.12s ease, transform 0.12s ease;
-}
-
-.random-result .coin-icon {
-  width: 92px;
-  height: 92px;
-  border: 5px double var(--orange);
-  border-radius: 50%;
-  font-size: 28px;
-  letter-spacing: -2px;
-  box-shadow: 0 0 18px rgba(245, 130, 42, 0.2);
-}
-
-.random-result .dice-face {
-  font-size: 82px;
-  line-height: 1;
-  color: var(--orange);
-}
-
-.random-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.random-actions button {
-  flex: 1;
-  min-height: 44px;
-  border: 2px solid var(--orange-dark);
-  border-radius: 11px;
-  background: var(--panel);
-  color: var(--orange);
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.5px;
-}
-
-.random-actions button.primary {
-  background: linear-gradient(145deg, #ff963f, #d9600d);
-  color: #fff;
-  border-color: #ff9b45;
-}
-
-.random-actions button:disabled {
-  opacity: 0.7;
-}
-
-@media (max-height: 700px) {
-  .app {
-    padding: 5px 8px;
-    gap: 5px;
-  }
-
-  .player {
-    padding: 6px;
-    gap: 5px;
-  }
-
-  .lp {
-    padding: 5px 0;
-    font-size: clamp(23px, 7vw, 34px);
-  }
-
-  .btn.big {
-    min-height: 35px;
-  }
-
-  .btn {
-    min-height: 30px;
-    padding: 3px 1px;
-  }
-
-  .amountbox {
-    padding: 6px 8px;
-  }
-
-  .preset {
-    min-height: 31px;
-  }
-
-  .customrow {
-    margin-top: 5px;
-  }
-
-  .customrow input {
-    padding: 5px 7px;
-  }
-
-  .notesbox {
-    padding: 6px 8px;
-  }
-
-  .newduel,
-  .random-btn {
-    min-height: 36px;
-  }
-
-  .random-btn {
-    flex-basis: 40px;
-    width: 40px;
-    font-size: 22px;
-  }
-
-  .coin-icon {
-    width: 24px;
-    height: 24px;
-  }
-
-  .random-dialog {
-    padding: 18px 16px 14px;
-  }
-
-  .random-result {
-    min-height: 95px;
-    margin: 5px 0 14px;
-  }
-
-  .random-result .coin-icon {
-    width: 76px;
-    height: 76px;
-  }
-
-  .random-result .dice-face {
-    font-size: 70px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .random-result,
-  .random-result.rolling {
-    transition: none;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Duel Assistant">
+  <meta name="theme-color" content="#b7aa9a">
+
+  <title>Duel Assistant</title>
+
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="icon" type="image/png" href="./icon-180.png">
+
+  <style>
+    :root {
+      --background: #b7aa9a;
+      --panel: #302c29;
+      --panel-light: #403a35;
+      --orange: #f5822a;
+      --orange-dark: #bd5d19;
+      --cream: #f5ecdf;
+      --muted: #b9afa4;
+      --border: #77695b;
+      --danger: #d66a45;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--background);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding:
+        max(16px, env(safe-area-inset-top))
+        14px
+        max(14px, env(safe-area-inset-bottom));
+      background: var(--background);
+      color: var(--panel);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      overscroll-behavior-y: contain;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 650px;
+      min-height: calc(100vh - 30px);
+      min-height: calc(100dvh - 30px);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 3px 2px 5px;
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 2px solid var(--orange);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--orange);
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .header-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(19px, 5vw, 25px);
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      opacity: 0.75;
+    }
+
+    .players {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .player {
+      min-width: 0;
+      padding: 12px 9px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      color: var(--cream);
+      box-shadow: 0 4px 0 rgba(48, 44, 41, 0.12);
+    }
+
+    .player-name {
+      margin-bottom: 9px;
+      color: var(--orange);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+    }
+
+    .lp-value {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 53px;
+      margin-bottom: 6px;
+      padding: 4px 0;
+      border: 1px solid #514940;
+      border-radius: 9px;
+      background: #252220;
+      color: var(--cream);
+      font-size: clamp(27px, 7vw, 39px);
+      font-weight: 900;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .lp-value input {
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .edit-hint {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .main-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .control-btn {
+      min-height: 43px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel-light);
+      color: var(--cream);
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .control-btn.plus {
+      border-color: var(--orange);
+      background: var(--orange);
+      color: #241d18;
+    }
+
+    .secondary-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-top: 7px;
+    }
+
+    .small-btn {
+      min-height: 32px;
+      padding: 5px 2px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .section {
+      padding: 12px;
+      border: 1px solid rgba(48, 44, 41, 0.18);
+      border-radius: 14px;
+      background: rgba(245, 236, 223, 0.35);
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--orange);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .amount-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .amount-btn {
+      min-height: 38px;
+      padding: 5px 2px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel);
+      color: var(--cream);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .amount-btn.active {
+      border-color: var(--orange);
+      background: var(--orange);
+      color: #241d18;
+    }
+
+    .custom-label {
+      display: block;
+      margin: 12px 0 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    #customAmount {
+      display: block;
+      width: 100%;
+      min-height: 43px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: var(--panel);
+      color: var(--cream);
+      font-size: 16px;
+    }
+
+    #customAmount:focus {
+      border-color: var(--orange);
+    }
+
+    .notes-section {
+      display: flex;
+      flex: 1 0 150px;
+      flex-direction: column;
+      min-height: 150px;
+    }
+
+    .notes-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+    }
+
+    .notes-heading .section-title {
+      flex: 1;
+      margin-bottom: 10px;
+    }
+
+    .clear-notes {
+      width: 34px;
+      height: 34px;
+      margin-top: -7px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel);
+      color: var(--orange);
+      font-size: 17px;
+    }
+
+    #notes {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      background: var(--panel);
+      color: var(--cream);
+      border: 2px solid var(--border);
+      border-radius: 11px;
+      padding: 10px;
+
+      /* Modifica: 16px evita lo zoom automatico di Safari su iPhone. */
+      font-size: 16px;
+
+      line-height: 1.45;
+    }
+
+    #notes::placeholder {
+      color: #b9afa4;
+      opacity: 1;
+    }
+
+    #notes:focus {
+      border-color: var(--orange);
+      outline: none;
+    }
+
+    .bottom-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 48px 48px;
+      gap: 9px;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .newduel {
+      min-height: 49px;
+      padding: 10px 8px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--orange);
+      color: #241d18;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 0 var(--orange-dark);
+    }
+
+    .random-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      min-height: 49px;
+      border: 2px solid var(--orange);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--orange);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .coin-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--orange);
+      border-radius: 50%;
+      font-size: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .random-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(20, 18, 16, 0.82);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .random-overlay.visible {
+      display: flex;
+    }
+
+    .random-dialog {
+      width: 100%;
+      max-width: 310px;
+      padding: 24px 18px 18px;
+      border: 2px solid var(--orange);
+      border-radius: 20px;
+      background: var(--panel);
+      color: var(--cream);
+      text-align: center;
+      box-shadow: 0 12px 45px rgba(0, 0, 0, 0.35);
+    }
+
+    .random-result {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 125px;
+      margin-bottom: 18px;
+      color: var(--orange);
+      font-size: 76px;
+      font-weight: 900;
+      line-height: 1;
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+    }
+
+    .random-result.rolling {
+      opacity: 0;
+      transform: scale(0.75) rotate(-8deg);
+    }
+
+    .random-result.coin-result {
+      width: 120px;
+      height: 120px;
+      min-height: 120px;
+      margin: 0 auto 23px;
+      border: 5px solid var(--orange);
+      border-radius: 50%;
+      background: #252220;
+      color: var(--cream);
+      font-size: 42px;
+      box-shadow: inset 0 0 0 4px #514940;
+    }
+
+    .random-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .random-actions button {
+      min-height: 43px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel-light);
+      color: var(--cream);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .random-actions .reroll {
+      border-color: var(--orange);
+      background: var(--orange);
+      color: #241d18;
+    }
+
+    @media (max-height: 700px) {
+      .app {
+        gap: 9px;
+      }
+
+      .player {
+        padding: 9px 7px;
+      }
+
+      .lp-value {
+        min-height: 44px;
+      }
+
+      .control-btn {
+        min-height: 37px;
+      }
+
+      .section {
+        padding: 9px;
+      }
+
+      .notes-section {
+        flex-basis: 120px;
+        min-height: 120px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<main class="app">
+  <main class="app">
+    <header class="header">
+      <div class="logo-mark" aria-hidden="true">LP</div>
+      <div class="header-text">
+        <h1>DUEL ASSISTANT</h1>
+        <div class="subtitle">LIFE POINTS &amp; NOTES</div>
+      </div>
+    </header>
 
-<section class="players">
-  <article class="player">
-    <h2>AVVERSARIO</h2>
-    <input class="lp" id="lp1" type="number"
-      inputmode="numeric" min="0" max="999999"
-      value="8000" aria-label="Life Points avversario">
-    <div class="edit-hint">✎ Tocca per modificare</div>
-    <div class="controls">
-      <button class="btn big" data-player="1" data-sign="-">−</button>
-      <button class="btn big plus" data-player="1" data-sign="+">+</button>
-      <button class="btn half" data-action="half" data-player="1">½ LP</button>
-      <button class="btn reset" data-action="reset" data-player="1">Reset</button>
+    <section class="players" aria-label="Punti vita dei giocatori">
+      <article class="player">
+        <div class="player-name">AVVERSARIO</div>
+        <div class="lp-value">
+          <input id="lp0" type="text" inputmode="numeric"
+            pattern="[0-9]*" value="8000"
+            aria-label="Punti vita avversario">
+        </div>
+        <div class="edit-hint">Tocca il numero per modificarlo</div>
+        <div class="main-buttons">
+          <button class="control-btn" data-player="0" data-action="minus"
+            aria-label="Diminuisci i punti vita avversario">−</button>
+          <button class="control-btn plus" data-player="0" data-action="plus"
+            aria-label="Aumenta i punti vita avversario">+</button>
+        </div>
+        <div class="secondary-buttons">
+          <button class="small-btn" data-player="0" data-action="half">½ LP</button>
+          <button class="small-btn" data-player="0" data-action="reset">RESET</button>
+        </div>
+      </article>
+
+      <article class="player">
+        <div class="player-name">TU</div>
+        <div class="lp-value">
+          <input id="lp1" type="text" inputmode="numeric"
+            pattern="[0-9]*" value="8000"
+            aria-label="I tuoi punti vita">
+        </div>
+        <div class="edit-hint">Tocca il numero per modificarlo</div>
+        <div class="main-buttons">
+          <button class="control-btn" data-player="1" data-action="minus"
+            aria-label="Diminuisci i tuoi punti vita">−</button>
+          <button class="control-btn plus" data-player="1" data-action="plus"
+            aria-label="Aumenta i tuoi punti vita">+</button>
+        </div>
+        <div class="secondary-buttons">
+          <button class="small-btn" data-player="1" data-action="half">½ LP</button>
+          <button class="small-btn" data-player="1" data-action="reset">RESET</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">IMPORTO OPERAZIONI</h2>
+      <div class="amount-buttons">
+        <button class="amount-btn" data-amount="200">200</button>
+        <button class="amount-btn active" data-amount="500">500</button>
+        <button class="amount-btn" data-amount="1000">1000</button>
+        <button class="amount-btn" data-amount="3000">3000</button>
+      </div>
+      <label class="custom-label" for="customAmount">Personalizza importo</label>
+      <input id="customAmount" type="number" inputmode="numeric"
+        min="0" step="1" value="500">
+    </section>
+
+    <section class="section notes-section">
+      <div class="notes-heading">
+        <h2 class="section-title">NOTE DEL DUELLO</h2>
+        <button id="clearNotes" class="clear-notes"
+          aria-label="Cancella le note" title="Cancella le note">⌫</button>
+      </div>
+      <textarea id="notes"
+        placeholder="Scrivi effetti, carte, calcoli o promemoria…"
+        aria-label="Note del duello"></textarea>
+    </section>
+
+    <div class="bottom-actions">
+      <button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
+      <button class="random-btn" id="coinFlip"
+        aria-label="Lancia una moneta" title="Lancia una moneta">
+        <span class="coin-icon" aria-hidden="true">T/C</span>
+      </button>
+      <button class="random-btn" id="rollDice"
+        aria-label="Lancia un dado" title="Lancia un dado">⚄</button>
     </div>
-  </article>
+  </main>
 
-  <article class="player">
-    <h2>TU</h2>
-    <input class="lp" id="lp2" type="number"
-      inputmode="numeric" min="0" max="999999"
-      value="8000" aria-label="I tuoi Life Points">
-    <div class="edit-hint">✎ Tocca per modificare</div>
-    <div class="controls">
-      <button class="btn big" data-player="2" data-sign="-">−</button>
-      <button class="btn big plus" data-player="2" data-sign="+">+</button>
-      <button class="btn half" data-action="half" data-player="2">½ LP</button>
-      <button class="btn reset" data-action="reset" data-player="2">Reset</button>
+  <div class="random-overlay" id="randomOverlay"
+    role="dialog" aria-modal="true" aria-label="Risultato casuale">
+    <div class="random-dialog">
+      <div class="random-result" id="randomResult"></div>
+      <div class="random-actions">
+        <button class="reroll" id="reroll">RILANCIA</button>
+        <button id="closeRandom">CHIUDI</button>
+      </div>
     </div>
-  </article>
-</section>
-
-<section class="amountbox">
-  <h2 class="section-title">IMPORTO OPERAZIONI</h2>
-  <div class="accent-line"></div>
-
-  <div class="presets">
-    <button class="preset" data-amount="200">200</button>
-    <button class="preset" data-amount="500">500</button>
-    <button class="preset active" data-amount="1000">1000</button>
-    <button class="preset" data-amount="3000">3000</button>
-    <button class="preset undo" id="undo" aria-label="Annulla ultima operazione">↶</button>
   </div>
 
-  <div class="customrow">
-    <label for="amount">Personalizza:</label>
-    <input id="amount" type="number" inputmode="numeric"
-      min="0" max="999999" value="1000" placeholder="Importo">
-  </div>
-</section>
+  <script>
+    (() => {
+      "use strict";
 
-<section class="notesbox">
-  <div class="notes-head">
-    <h2 class="section-title">NOTE DEL DUELLO</h2>
-    <button class="iconbtn" id="clearNotes" aria-label="Cancella note">⌫</button>
-  </div>
-  <div class="accent-line"></div>
-  <textarea id="notes"
-    placeholder="Scrivi effetti, carte, calcoli o promemoria..."></textarea>
-</section>
+      const STORAGE_KEY = "duel-assistant-data";
+      const DEFAULT_LP = 8000;
 
-<div class="bottom-actions">
-  <button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
+      const lpInputs = [
+        document.getElementById("lp0"),
+        document.getElementById("lp1")
+      ];
 
-  <button class="random-btn" id="coinFlip"
-    aria-label="Lancia una moneta" title="Lancia una moneta">
-    <span class="coin-icon" aria-hidden="true">T/C</span>
-  </button>
+      const customAmount = document.getElementById("customAmount");
+      const notes = document.getElementById("notes");
+      const overlay = document.getElementById("randomOverlay");
+      const randomResult = document.getElementById("randomResult");
 
-  <button class="random-btn" id="rollDice"
-    aria-label="Lancia un dado" title="Lancia un dado">⚄</button>
-</div>
+      let selectedAmount = 500;
+      let undoStack = [];
+      let randomType = "coin";
+      let rollTimer = null;
 
-</main>
+      function parseNumber(value, fallback = 0) {
+        const parsed = Number.parseInt(String(value), 10);
+        return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+      }
 
-<script>
-const $ = id => document.getElementById(id);
-const STORAGE_KEY = 'duel-assistant-data';
+      function getLP(player) {
+        return parseNumber(lpInputs[player].value, 0);
+      }
 
-let history = [];
-let saveTimer;
-let rollTimer = null;
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            lp: [getLP(0), getLP(1)],
+            amount: parseNumber(customAmount.value, selectedAmount),
+            notes: notes.value
+          }));
+        } catch (error) {
+          // L'app continua a funzionare anche se lo spazio locale non è disponibile.
+        }
+      }
 
-function currentState() {
-  return {
-    lp1: $('lp1').value,
-    lp2: $('lp2').value,
-    amount: $('amount').value,
-    notes: $('notes').value
-  };
-}
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
 
-function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState()));
-  } catch (e) {}
-}
+          const data = JSON.parse(raw);
 
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 150);
-}
+          if (Array.isArray(data.lp) && data.lp.length === 2) {
+            lpInputs[0].value = String(parseNumber(data.lp[0], DEFAULT_LP));
+            lpInputs[1].value = String(parseNumber(data.lp[1], DEFAULT_LP));
+          }
 
-function remember() {
-  history.push({
-    lp1: $('lp1').value,
-    lp2: $('lp2').value
-  });
+          if (data.amount !== undefined) {
+            const amount = parseNumber(data.amount, selectedAmount);
+            customAmount.value = String(amount);
+            selectedAmount = amount;
+          }
 
-  if (history.length > 50) history.shift();
-}
+          if (typeof data.notes === "string") {
+            notes.value = data.notes;
+          }
 
-function setLP(id, value) {
-  const n = Math.floor(Number(value) || 0);
-  $(id).value = Math.max(0, Math.min(999999, n));
-  save();
-}
+          updateAmountButtons();
+        } catch (error) {
+          // Se i dati salvati non sono leggibili, si usano i valori iniziali.
+        }
+      }
 
-function selectedAmount() {
-  return Math.max(0, Math.min(999999,
-    Math.floor(Number($('amount').value) || 0)));
-}
+      function rememberState() {
+        undoStack.push({
+          lp: [getLP(0), getLP(1)],
+          amount: parseNumber(customAmount.value, selectedAmount),
+          notes: notes.value
+        });
 
-function selectPreset(n) {
-  $('amount').value = n;
+        if (undoStack.length > 50) undoStack.shift();
+      }
 
-  document.querySelectorAll('[data-amount]').forEach(button => {
-    button.classList.toggle(
-      'active',
-      Number(button.dataset.amount) === n
-    );
-  });
+      function undo() {
+        const previous = undoStack.pop();
+        if (!previous) return;
 
-  save();
-}
+        lpInputs[0].value = String(previous.lp[0]);
+        lpInputs[1].value = String(previous.lp[1]);
+        customAmount.value = String(previous.amount);
+        notes.value = previous.notes;
+        selectedAmount = previous.amount;
 
-document.querySelectorAll('[data-amount]').forEach(button => {
-  button.addEventListener('click', () => {
-    selectPreset(Number(button.dataset.amount));
-  });
-});
+        updateAmountButtons();
+        saveState();
+      }
 
-$('amount').addEventListener('input', () => {
-  document.querySelectorAll('[data-amount]').forEach(button => {
-    button.classList.toggle(
-      'active',
-      Number(button.dataset.amount) === selectedAmount()
-    );
-  });
+      function updateAmountButtons() {
+        document.querySelectorAll("[data-amount]").forEach(button => {
+          button.classList.toggle(
+            "active",
+            Number(button.dataset.amount) === selectedAmount
+          );
+        });
+      }
 
-  save();
-});
+      function getAmount() {
+        const amount = parseNumber(customAmount.value, selectedAmount);
+        return amount;
+      }
 
-document.querySelectorAll('.lp').forEach(input => {
-  input.addEventListener('change', () => {
-    remember();
-    setLP(input.id, input.value);
-  });
-});
+      function setLP(player, value) {
+        lpInputs[player].value = String(Math.max(0, Math.trunc(value)));
+        saveState();
+      }
 
-document.querySelectorAll('[data-player]').forEach(button => {
-  button.addEventListener('click', () => {
-    const id = 'lp' + button.dataset.player;
-    const action = button.dataset.action;
-    const current = Number($(id).value) || 0;
+      function changeLP(player, action) {
+        const current = getLP(player);
+        const amount = getAmount();
 
-    remember();
+        rememberState();
 
-    if (action === 'half') {
-      setLP(id, Math.floor(current / 2));
-    } else if (action === 'reset') {
-      setLP(id, 8000);
-    } else {
-      const delta = selectedAmount();
-      const next = current +
-        (button.dataset.sign === '+' ? delta : -delta);
-      setLP(id, next);
-    }
-  });
-});
+        if (action === "plus") {
+          setLP(player, current + amount);
+        } else if (action === "minus") {
+          setLP(player, current - amount);
+        } else if (action === "half") {
+          setLP(player, Math.floor(current / 2));
+        } else if (action === "reset") {
+          setLP(player, DEFAULT_LP);
+        }
+      }
 
-$('undo').addEventListener('click', () => {
-  const previous = history.pop();
-
-  if (!previous) {
-    alert('Nessuna operazione da annullare.');
-    return;
-  }
-
-  $('lp1').value = previous.lp1;
-  $('lp2').value = previous.lp2;
-  save();
-});
-
-$('notes').addEventListener('input', scheduleSave);
-
-$('clearNotes').addEventListener('click', () => {
-  if (confirm('Cancellare tutte le note?')) {
-    $('notes').value = '';
-    save();
-  }
-});
-
-$('newDuel').addEventListener('click', () => {
-  if (confirm('Iniziare un nuovo duello? I Life Points torneranno a 8000 e le note saranno cancellate.')) {
-    remember();
-    $('lp1').value = 8000;
-    $('lp2').value = 8000;
-    $('notes').value = '';
-    save();
-  }
-});
-
-/* Finestra casuale con animazione a ogni rilancio */
-function openRandomDialog(type) {
-  const overlay = document.createElement('div');
-  overlay.className = 'random-overlay';
-
-  const dialog = document.createElement('div');
-  dialog.className = 'random-dialog';
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-modal', 'true');
-  dialog.setAttribute(
-    'aria-label',
-    type === 'coin' ? 'Risultato della moneta' : 'Risultato del dado'
-  );
-
-  const result = document.createElement('div');
-  result.className = 'random-result';
-  result.setAttribute('aria-live', 'polite');
-
-  const actions = document.createElement('div');
-  actions.className = 'random-actions';
-
-  const reroll = document.createElement('button');
-  reroll.className = 'primary';
-  reroll.textContent = 'RILANCIA';
-
-  const close = document.createElement('button');
-  close.textContent = 'CHIUDI';
-
-  let rolling = false;
-
-  function showResult() {
-    result.replaceChildren();
-
-    if (type === 'coin') {
-      const isHeads = Math.random() < 0.5;
-      const coin = document.createElement('span');
-
-      coin.className = 'coin-icon';
-      coin.textContent = isHeads ? 'T' : 'C';
-      coin.setAttribute('aria-label', isHeads ? 'Testa' : 'Croce');
-
-      result.appendChild(coin);
-    } else {
-      const value = Math.floor(Math.random() * 6) + 1;
-      const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-      const dice = document.createElement('span');
-
-      dice.className = 'dice-face';
-      dice.textContent = faces[value - 1];
-      dice.setAttribute('aria-label', 'Risultato ' + value);
-
-      result.appendChild(dice);
-    }
-  }
-
-  function roll() {
-    if (rolling) return;
-
-    rolling = true;
-    reroll.disabled = true;
-    result.classList.add('rolling');
-
-    if (rollTimer !== null) {
-      clearTimeout(rollTimer);
-    }
-
-    rollTimer = setTimeout(() => {
-      showResult();
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          result.classList.remove('rolling');
-          reroll.disabled = false;
-          rolling = false;
-          rollTimer = null;
+      document.querySelectorAll("[data-player]").forEach(button => {
+        button.addEventListener("click", () => {
+          changeLP(
+            Number(button.dataset.player),
+            button.dataset.action
+          );
         });
       });
-    }, 350);
-  }
 
-  function closeDialog() {
-    if (rollTimer !== null) {
-      clearTimeout(rollTimer);
-      rollTimer = null;
-    }
-    overlay.remove();
-  }
+      lpInputs.forEach(input => {
+        input.addEventListener("focus", () => {
+          rememberState();
+          input.select();
+        });
 
-  reroll.addEventListener('click', roll);
-  close.addEventListener('click', closeDialog);
+        input.addEventListener("input", () => {
+          input.value = input.value.replace(/[^0-9]/g, "");
+          saveState();
+        });
 
-  overlay.addEventListener('click', event => {
-    if (event.target === overlay) closeDialog();
-  });
+        input.addEventListener("change", () => {
+          input.value = String(parseNumber(input.value, 0));
+          saveState();
+        });
 
-  dialog.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeDialog();
-  });
+        input.addEventListener("blur", () => {
+          input.value = String(parseNumber(input.value, 0));
+          saveState();
+        });
+      });
 
-  actions.append(reroll, close);
-  dialog.append(result, actions);
-  overlay.appendChild(dialog);
-  document.body.appendChild(overlay);
+      document.querySelectorAll("[data-amount]").forEach(button => {
+        button.addEventListener("click", () => {
+          rememberState();
+          selectedAmount = Number(button.dataset.amount);
+          customAmount.value = String(selectedAmount);
+          updateAmountButtons();
+          saveState();
+        });
+      });
 
-  showResult();
-  close.focus();
-}
+      customAmount.addEventListener("focus", () => {
+        rememberState();
+      });
 
-$('coinFlip').addEventListener('click', () => {
-  openRandomDialog('coin');
-});
+      customAmount.addEventListener("input", () => {
+        selectedAmount = parseNumber(customAmount.value, 0);
+        updateAmountButtons();
+        saveState();
+      });
 
-$('rollDice').addEventListener('click', () => {
-  openRandomDialog('dice');
-});
+      notes.addEventListener("input", saveState);
 
-/* Ripristino dei dati salvati */
-try {
-  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      document.getElementById("clearNotes").addEventListener("click", () => {
+        if (!notes.value) return;
 
-  if (data) {
-    if (data.lp1 !== undefined) $('lp1').value = data.lp1;
-    if (data.lp2 !== undefined) $('lp2').value = data.lp2;
-    if (data.amount !== undefined) $('amount').value = data.amount;
-    if (data.notes !== undefined) $('notes').value = data.notes;
+        rememberState();
+        notes.value = "";
+        saveState();
+      });
 
-    document.querySelectorAll('[data-amount]').forEach(button => {
-      button.classList.toggle(
-        'active',
-        Number(button.dataset.amount) === selectedAmount()
+      document.getElementById("newDuel").addEventListener("click", () => {
+        const confirmed = window.confirm(
+          "Iniziare un nuovo duello? Entrambi i giocatori torneranno a 8000 LP e le note saranno cancellate."
+        );
+
+        if (!confirmed) return;
+
+        rememberState();
+
+        lpInputs[0].value = String(DEFAULT_LP);
+        lpInputs[1].value = String(DEFAULT_LP);
+        notes.value = "";
+
+        saveState();
+      });
+
+      function openRandomDialog(type) {
+        randomType = type;
+        overlay.classList.add("visible");
+        roll();
+      }
+
+      function roll() {
+        if (rollTimer !== null) {
+          clearTimeout(rollTimer);
+          rollTimer = null;
+        }
+
+        randomResult.classList.add("rolling");
+
+        rollTimer = setTimeout(() => {
+          if (randomType === "coin") {
+            const heads = Math.random() < 0.5;
+            randomResult.textContent = heads ? "T" : "C";
+            randomResult.classList.add("coin-result");
+            randomResult.setAttribute(
+              "aria-label",
+              heads ? "Testa" : "Croce"
+            );
+          } else {
+            const result = Math.floor(Math.random() * 6) + 1;
+            const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+            randomResult.textContent = diceFaces[result - 1];
+            randomResult.classList.remove("coin-result");
+            randomResult.setAttribute(
+              "aria-label",
+              "Risultato del dado: " + result
+            );
+          }
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              randomResult.classList.remove("rolling");
+            });
+          });
+
+          rollTimer = null;
+        }, 350);
+      }
+
+      function closeRandomDialog() {
+        overlay.classList.remove("visible");
+
+        if (rollTimer !== null) {
+          clearTimeout(rollTimer);
+          rollTimer = null;
+        }
+
+        randomResult.classList.remove("rolling");
+      }
+
+      document.getElementById("coinFlip").addEventListener("click", () => {
+        openRandomDialog("coin");
+      });
+
+      document.getElementById("rollDice").addEventListener("click", () => {
+        openRandomDialog("dice");
+      });
+
+      document.getElementById("reroll").addEventListener("click", roll);
+      document.getElementById("closeRandom").addEventListener(
+        "click",
+        closeRandomDialog
       );
-    });
-  }
-} catch (e) {}
 
-/* Service worker per uso offline */
-if ('serviceWorker' in navigator &&
-    location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-}
-</script>
+      overlay.addEventListener("click", event => {
+        if (event.target === overlay) closeRandomDialog();
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeRandomDialog();
+      });
+
+      loadState();
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {
+            // La pagina resta utilizzabile anche senza registrazione offline.
+          });
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
