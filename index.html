@@ -288,7 +288,7 @@ button {
   color: #a99e93;
 }
 
-/* Barra inferiore con tre pulsanti */
+/* Barra inferiore compatta */
 .bottom-actions {
   flex: 0 0 auto;
   display: flex;
@@ -331,7 +331,7 @@ button {
   transform: scale(0.96);
 }
 
-/* Moneta con le due facce riconoscibili */
+/* Simbolo della moneta con le due facce */
 .coin-icon {
   width: 27px;
   height: 27px;
@@ -341,10 +341,86 @@ button {
   border: 3px double var(--orange);
   border-radius: 50%;
   color: var(--cream);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: -1px;
   transform: rotate(-15deg);
+}
+
+/* Finestra personalizzata di moneta e dado */
+.random-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.random-dialog {
+  width: 100%;
+  max-width: 320px;
+  padding: 24px 20px 18px;
+  border: 2px solid var(--orange-dark);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #38322e, var(--panel-dark));
+  color: var(--orange);
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.random-result {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orange);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+  margin: 8px 0 20px;
+}
+
+.random-result .coin-icon {
+  width: 92px;
+  height: 92px;
+  border: 5px double var(--orange);
+  border-radius: 50%;
+  font-size: 28px;
+  letter-spacing: -2px;
+  box-shadow: 0 0 18px rgba(245, 130, 42, 0.2);
+}
+
+.random-result .dice-face {
+  font-size: 82px;
+  line-height: 1;
+  color: var(--orange);
+}
+
+.random-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.random-actions button {
+  flex: 1;
+  min-height: 44px;
+  border: 2px solid var(--orange-dark);
+  border-radius: 11px;
+  background: var(--panel);
+  color: var(--orange);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+}
+
+.random-actions button.primary {
+  background: linear-gradient(145deg, #ff963f, #d9600d);
+  color: #fff;
+  border-color: #ff9b45;
 }
 
 @media (max-height: 700px) {
@@ -406,6 +482,24 @@ button {
   .coin-icon {
     width: 24px;
     height: 24px;
+  }
+
+  .random-dialog {
+    padding: 18px 16px 14px;
+  }
+
+  .random-result {
+    min-height: 95px;
+    margin: 5px 0 14px;
+  }
+
+  .random-result .coin-icon {
+    width: 76px;
+    height: 76px;
+  }
+
+  .random-result .dice-face {
+    font-size: 70px;
   }
 }
 </style>
@@ -481,14 +575,12 @@ button {
   </button>
 
   <button class="random-btn" id="coinFlip"
-    aria-label="Lancia una moneta"
-    title="Lancia una moneta">
+    aria-label="Lancia una moneta" title="Lancia una moneta">
     <span class="coin-icon" aria-hidden="true">T/C</span>
   </button>
 
   <button class="random-btn" id="rollDice"
-    aria-label="Lancia un dado"
-    title="Lancia un dado">⚄</button>
+    aria-label="Lancia un dado" title="Lancia un dado">⚄</button>
 </div>
 
 </main>
@@ -631,20 +723,102 @@ $('newDuel').addEventListener('click', () => {
   }
 });
 
-/* Lancio casuale della moneta: TESTA o CROCE */
+/* Finestra personalizzata con rilancio e chiusura */
+function openRandomDialog(type) {
+  const overlay = document.createElement('div');
+  overlay.className = 'random-overlay';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'random-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute(
+    'aria-label',
+    type === 'coin' ? 'Risultato della moneta' : 'Risultato del dado'
+  );
+
+  const result = document.createElement('div');
+  result.className = 'random-result';
+  result.setAttribute('aria-live', 'polite');
+
+  const actions = document.createElement('div');
+  actions.className = 'random-actions';
+
+  const reroll = document.createElement('button');
+  reroll.className = 'primary';
+  reroll.textContent = 'RILANCIA';
+
+  const close = document.createElement('button');
+  close.textContent = 'CHIUDI';
+
+  function roll() {
+    result.replaceChildren();
+
+    if (type === 'coin') {
+      const isHeads = Math.random() < 0.5;
+      const coin = document.createElement('span');
+
+      coin.className = 'coin-icon';
+      coin.textContent = isHeads ? 'T' : 'C';
+      coin.setAttribute(
+        'aria-label',
+        isHeads ? 'Testa' : 'Croce'
+      );
+
+      result.appendChild(coin);
+    } else {
+      const value = Math.floor(Math.random() * 6) + 1;
+      const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+      const dice = document.createElement('span');
+
+      dice.className = 'dice-face';
+      dice.textContent = faces[value - 1];
+      dice.setAttribute('aria-label', 'Risultato ' + value);
+
+      result.appendChild(dice);
+    }
+  }
+
+  reroll.addEventListener('click', roll);
+
+  close.addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) {
+      overlay.remove();
+    }
+  });
+
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      overlay.remove();
+    }
+  });
+
+  actions.append(reroll, close);
+  dialog.append(result, actions);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+
+  roll();
+  close.focus();
+}
+
 $('coinFlip').addEventListener('click', () => {
-  const result = Math.random() < 0.5 ? 'TESTA' : 'CROCE';
-  alert('LANCIO MONETA\n\n' + result);
+  openRandomDialog('coin');
 });
 
-/* Lancio casuale di un dado a sei facce */
 $('rollDice').addEventListener('click', () => {
-  const result = Math.floor(Math.random() * 6) + 1;
-  alert('LANCIO DADO\n\nRisultato: ' + result);
+  openRandomDialog('dice');
 });
 
+/* Ripristino dei dati salvati */
 try {
-  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  const data = JSON.parse(
+    localStorage.getItem(STORAGE_KEY) || 'null'
+  );
 
   if (data) {
     if (data.lp1 !== undefined) $('lp1').value = data.lp1;
@@ -661,6 +835,7 @@ try {
   }
 } catch (e) {}
 
+/* Service worker per la modalità offline */
 if ('serviceWorker' in navigator &&
     location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
