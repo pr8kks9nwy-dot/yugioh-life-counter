@@ -52,6 +52,19 @@ button, input, textarea {
 button {
   cursor: pointer;
   touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 90ms ease, filter 90ms ease, background-color 90ms ease;
+}
+
+button:active {
+  transform: scale(0.94) translateY(1px);
+  filter: brightness(0.82);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 2px;
 }
 
 .app {
@@ -109,18 +122,20 @@ button {
   letter-spacing: 1px;
   appearance: textfield;
   -moz-appearance: textfield;
+  transition: color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transform-origin: center;
+}
+
+.lp.lp-changed {
+  color: #ffad65;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px rgba(245, 130, 42, 0.2), 0 0 20px rgba(245, 130, 42, 0.42);
+  transform: scale(1.035);
 }
 
 .lp::-webkit-inner-spin-button,
 .lp::-webkit-outer-spin-button {
   -webkit-appearance: none;
-  margin: 0;
-}
-
-.edit-hint {
-  font-size: 11px;
-  text-align: center;
-  color: var(--muted);
   margin: 0;
 }
 
@@ -234,11 +249,6 @@ button {
   line-height: 1;
 }
 
-#clearAmount:active {
-  background: #a94709;
-  transform: scale(0.94);
-}
-
 #amount {
   flex: 1 1 auto;
   width: 0;
@@ -341,17 +351,16 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
   background: var(--panel);
   color: var(--orange);
   border: 2px solid var(--orange-dark);
   border-radius: 12px;
   padding: 0;
-  font-size: 25px;
-}
-
-.random-btn:active {
-  background: var(--orange-dark);
-  transform: scale(0.96);
+  font-size: 23px;
+  line-height: 1;
+  text-align: center;
 }
 
 .coin-icon {
@@ -517,7 +526,8 @@ button {
   .random-btn {
     flex-basis: 40px;
     width: 40px;
-    font-size: 22px;
+    font-size: 20px;
+    line-height: 1;
   }
 
   .coin-icon {
@@ -545,6 +555,8 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  button,
+  .lp,
   .random-result,
   .random-result.rolling {
     transition: none;
@@ -562,7 +574,6 @@ button {
     <input class="lp" id="lp1" type="number"
       inputmode="numeric" min="0" max="999999"
       value="8000" aria-label="Life Points avversario">
-    <div class="edit-hint">✎ Tocca per modificare</div>
     <div class="controls">
       <button class="btn big" data-player="1" data-sign="-">−</button>
       <button class="btn big plus" data-player="1" data-sign="+">+</button>
@@ -576,7 +587,6 @@ button {
     <input class="lp" id="lp2" type="number"
       inputmode="numeric" min="0" max="999999"
       value="8000" aria-label="I tuoi Life Points">
-    <div class="edit-hint">✎ Tocca per modificare</div>
     <div class="controls">
       <button class="btn big" data-player="2" data-sign="-">−</button>
       <button class="btn big plus" data-player="2" data-sign="+">+</button>
@@ -639,9 +649,8 @@ const STORAGE_KEY = 'duel-assistant-data';
 let history = [];
 let saveTimer;
 let rollTimer = null;
-
-/* Memorizza il valore precedente durante la modifica manuale degli LP. */
 const previousLPValues = {};
+const lpAnimationTimers = {};
 
 function currentState() {
   return {
@@ -672,9 +681,33 @@ function remember() {
   if (history.length > 50) history.shift();
 }
 
-function setLP(id, value) {
+function animateLP(id) {
+  const input = $(id);
+
+  if (lpAnimationTimers[id]) {
+    clearTimeout(lpAnimationTimers[id]);
+  }
+
+  input.classList.remove('lp-changed');
+  void input.offsetWidth;
+  input.classList.add('lp-changed');
+
+  lpAnimationTimers[id] = setTimeout(() => {
+    input.classList.remove('lp-changed');
+    delete lpAnimationTimers[id];
+  }, 320);
+}
+
+function setLP(id, value, animate = true) {
+  const input = $(id);
+  const oldValue = input.value;
   const n = Math.floor(Number(value) || 0);
-  $(id).value = Math.max(0, Math.min(999999, n));
+  input.value = Math.max(0, Math.min(999999, n));
+
+  if (animate && input.value !== oldValue) {
+    animateLP(id);
+  }
+
   save();
 }
 
@@ -685,14 +718,7 @@ function selectedAmount() {
 
 function selectPreset(n) {
   $('amount').value = n;
-
-  document.querySelectorAll('[data-amount]').forEach(button => {
-    button.classList.toggle(
-      'active',
-      Number(button.dataset.amount) === n
-    );
-  });
-
+  updatePresetSelection();
   save();
 }
 
@@ -713,14 +739,11 @@ document.querySelectorAll('[data-amount]').forEach(button => {
   });
 });
 
-/* Aggiornamento dell'importo personalizzato e dei preset attivi. */
 $('amount').addEventListener('input', () => {
   updatePresetSelection();
   save();
 });
 
-/* Nuovo comando: cancella l'importo con un tocco e riporta il cursore
-   nel campo, pronto per inserire il valore successivo. */
 $('clearAmount').addEventListener('click', () => {
   $('amount').value = '';
   updatePresetSelection();
@@ -742,20 +765,38 @@ document.querySelectorAll('.lp').forEach(input => {
   });
 
   input.addEventListener('blur', () => {
+    const oldValue = previousLPValues[input.id] || '0';
+
     if (input.value.trim() === '') {
-      input.value = previousLPValues[input.id] || '0';
+      input.value = oldValue;
     } else {
       input.value = String(
         Math.max(0, Math.min(999999, Math.floor(Number(input.value) || 0)))
       );
     }
 
+    if (input.value !== oldValue) {
+      animateLP(input.id);
+      remember();
+    }
+
     save();
   });
 
   input.addEventListener('change', () => {
-    remember();
-    setLP(input.id, input.value);
+    const oldValue = previousLPValues[input.id] || input.value;
+    const newValue = String(
+      Math.max(0, Math.min(999999, Math.floor(Number(input.value) || 0)))
+    );
+
+    input.value = newValue;
+
+    if (newValue !== oldValue) {
+      animateLP(input.id);
+      remember();
+    }
+
+    save();
   });
 });
 
@@ -788,8 +829,8 @@ $('undo').addEventListener('click', () => {
     return;
   }
 
-  $('lp1').value = previous.lp1;
-  $('lp2').value = previous.lp2;
+  setLP('lp1', previous.lp1);
+  setLP('lp2', previous.lp2);
   save();
 });
 
@@ -805,8 +846,8 @@ $('clearNotes').addEventListener('click', () => {
 $('newDuel').addEventListener('click', () => {
   if (confirm('Iniziare un nuovo duello? I Life Points torneranno a 8000 e le note saranno cancellate.')) {
     remember();
-    $('lp1').value = 8000;
-    $('lp2').value = 8000;
+    setLP('lp1', 8000);
+    setLP('lp2', 8000);
     $('notes').value = '';
     save();
   }
@@ -928,7 +969,7 @@ $('rollDice').addEventListener('click', () => {
   openRandomDialog('dice');
 });
 
-/* Ripristino dei dati salvati */
+/* Ripristino dei dati salvati senza animazioni all'avvio. */
 try {
   const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
 
