@@ -410,6 +410,124 @@ button:focus-visible {
   transform: rotate(-15deg);
 }
 
+.calculator-icon {
+  width: 24px;
+  height: 29px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 2px solid var(--orange);
+  border-radius: 5px;
+  color: var(--cream);
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.calculator-icon::before {
+  content: "";
+  display: block;
+  width: 13px;
+  height: 5px;
+  border: 1px solid var(--orange);
+  border-radius: 1px;
+}
+
+/* Finestra della calcolatrice */
+.calculator-dialog {
+  width: 100%;
+  max-width: 340px;
+  padding: 18px;
+  border: 2px solid var(--orange-dark);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #38322e, var(--panel-dark));
+  color: var(--orange);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.calculator-title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.calculator-display {
+  min-height: 78px;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #77695b;
+  border-radius: 12px;
+  background: #171513;
+  text-align: right;
+}
+
+.calculator-expression {
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calculator-value {
+  color: var(--cream);
+  font-size: clamp(26px, 8vw, 36px);
+  font-weight: 850;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calculator-keys {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calculator-keys button,
+.calculator-close {
+  min-width: 0;
+  min-height: 48px;
+  border: 2px solid var(--orange-dark);
+  border-radius: 11px;
+  background: var(--panel);
+  color: var(--orange);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.calculator-keys button.operator {
+  background: #3a2a20;
+}
+
+.calculator-keys button.clear {
+  color: var(--cream);
+  font-size: 15px;
+}
+
+.calculator-keys button.equals {
+  background: linear-gradient(145deg, #ff963f, #d9600d);
+  border-color: #ff9b45;
+  color: #fff;
+}
+
+.calculator-close {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
 /* Finestre di moneta e dado */
 .random-overlay {
   position: fixed;
@@ -584,6 +702,14 @@ button:focus-visible {
     height: 24px;
   }
 
+  .calculator-keys {
+    gap: 6px;
+  }
+
+  .calculator-keys button {
+    min-height: 42px;
+  }
+
   .random-dialog {
     padding: 18px 16px 14px;
   }
@@ -698,6 +824,11 @@ button:focus-visible {
 
 <div class="bottom-actions">
   <button class="newduel" id="newDuel">↻ &nbsp; NUOVO DUELLO</button>
+
+  <button class="random-btn" id="openCalculator"
+    aria-label="Apri la calcolatrice" title="Calcolatrice">
+    <span class="calculator-icon" aria-hidden="true">+ − × ÷</span>
+  </button>
 
   <button class="random-btn" id="coinFlip"
     aria-label="Lancia una moneta" title="Lancia una moneta">
@@ -925,6 +1056,198 @@ $('newDuel').addEventListener('click', () => {
     save();
   }
 });
+
+/* Calcolatrice semplice, indipendente dai Life Points e dai dati salvati. */
+function openCalculator() {
+  const overlay = document.createElement('div');
+  overlay.className = 'random-overlay';
+
+  const dialog = document.createElement('section');
+  dialog.className = 'calculator-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-label', 'Calcolatrice');
+
+  const title = document.createElement('h2');
+  title.className = 'calculator-title';
+  title.textContent = 'CALCOLATRICE';
+
+  const display = document.createElement('div');
+  display.className = 'calculator-display';
+  display.setAttribute('aria-live', 'polite');
+
+  const expression = document.createElement('div');
+  expression.className = 'calculator-expression';
+  const value = document.createElement('div');
+  value.className = 'calculator-value';
+  display.append(expression, value);
+
+  const keys = document.createElement('div');
+  keys.className = 'calculator-keys';
+  keys.innerHTML = `
+    <button type="button" class="clear" data-key="clear">AC</button>
+    <button type="button" class="clear" data-key="backspace" aria-label="Cancella ultima cifra">⌫</button>
+    <button type="button" class="operator" data-key="÷" aria-label="Diviso">÷</button>
+    <button type="button" class="operator" data-key="×" aria-label="Per">×</button>
+    <button type="button" data-key="7">7</button>
+    <button type="button" data-key="8">8</button>
+    <button type="button" data-key="9">9</button>
+    <button type="button" class="operator" data-key="−" aria-label="Meno">−</button>
+    <button type="button" data-key="4">4</button>
+    <button type="button" data-key="5">5</button>
+    <button type="button" data-key="6">6</button>
+    <button type="button" class="operator" data-key="+">+</button>
+    <button type="button" data-key="1">1</button>
+    <button type="button" data-key="2">2</button>
+    <button type="button" data-key="3">3</button>
+    <button type="button" class="equals" data-key="=">=</button>
+    <button type="button" data-key="0" style="grid-column: span 2">0</button>
+    <button type="button" data-key=".">.</button>
+    <button type="button" class="operator" data-key="±" aria-label="Cambia segno">±</button>`;
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'calculator-close';
+  close.textContent = 'CHIUDI';
+
+  let current = '0';
+  let stored = null;
+  let operator = null;
+  let replaceCurrent = false;
+  let error = false;
+  let justCalculated = false;
+
+  const symbols = { '+': '+', '−': '−', '×': '×', '÷': '÷' };
+  const format = number => {
+    if (!Number.isFinite(number)) return 'Errore';
+    const rounded = Number(number.toPrecision(11));
+    return Object.is(rounded, -0) ? '0' : String(rounded);
+  };
+
+  function compute(left, op, right) {
+    if (!Number.isFinite(left) || !Number.isFinite(right)) return null;
+    let result;
+    if (op === '+') result = left + right;
+    else if (op === '−') result = left - right;
+    else if (op === '×') result = left * right;
+    else if (op === '÷') {
+      if (right === 0) return null;
+      result = left / right;
+    } else return null;
+    return Number.isFinite(result) ? result : null;
+  }
+
+  function update() {
+    value.textContent = error ? 'Errore' : current;
+    value.style.fontSize = current.length > 10 ? 'clamp(20px, 6vw, 28px)' : '';
+    if (operator && stored !== null && !error) {
+      const left = format(stored);
+      expression.textContent = `${left} ${symbols[operator]} ${replaceCurrent ? '' : current}`;
+      if (!replaceCurrent) {
+        const preview = compute(stored, operator, Number(current));
+        if (preview !== null) value.textContent = format(preview);
+        else if (operator === '÷' && Number(current) === 0) value.textContent = '÷ 0';
+      }
+    } else {
+      expression.textContent = justCalculated ? 'Risultato' : '';
+    }
+  }
+
+  function reset() {
+    current = '0'; stored = null; operator = null;
+    replaceCurrent = false; error = false; justCalculated = false;
+    update();
+  }
+
+  function enterDigit(digit) {
+    if (error || replaceCurrent) {
+      current = digit === '.' ? '0.' : digit;
+      replaceCurrent = false;
+      error = false;
+      justCalculated = false;
+    } else if (digit === '.') {
+      if (!current.includes('.')) current += '.';
+    } else if (current === '0') current = digit;
+    else if (current.replace('-', '').replace('.', '').length < 15) current += digit;
+    update();
+  }
+
+  function chooseOperator(nextOperator) {
+    if (error) return;
+    const parsed = Number(current);
+    if (!Number.isFinite(parsed)) { error = true; update(); return; }
+    if (operator && stored !== null && !replaceCurrent) {
+      const result = compute(stored, operator, parsed);
+      if (result === null) { error = true; current = '0'; operator = null; stored = null; update(); return; }
+      current = format(result);
+      stored = result;
+    } else {
+      stored = parsed;
+    }
+    operator = nextOperator;
+    replaceCurrent = true;
+    justCalculated = false;
+    update();
+  }
+
+  function equals() {
+    if (error || !operator || stored === null || replaceCurrent) return;
+    const result = compute(stored, operator, Number(current));
+    if (result === null) {
+      error = true; current = '0';
+    } else {
+      current = format(result);
+      justCalculated = true;
+    }
+    stored = null; operator = null; replaceCurrent = true;
+    update();
+  }
+
+  function press(key) {
+    if (/^\d$/.test(key) || key === '.') { enterDigit(key); return; }
+    if (key === 'clear') { reset(); return; }
+    if (key === 'backspace') {
+      if (error || replaceCurrent) { current = '0'; error = false; replaceCurrent = false; }
+      else current = current.length > 1 ? current.slice(0, -1) : '0';
+      if (current === '-') current = '0';
+      update(); return;
+    }
+    if (key === '±') {
+      if (!error && current !== '0') current = current.startsWith('-') ? current.slice(1) : '-' + current;
+      update(); return;
+    }
+    if (['+', '−', '×', '÷'].includes(key)) { chooseOperator(key); return; }
+    if (key === '=') equals();
+  }
+
+  function closeDialog() { overlay.remove(); }
+  keys.addEventListener('click', event => {
+    const button = event.target.closest('button[data-key]');
+    if (button) press(button.dataset.key);
+  });
+  close.addEventListener('click', closeDialog);
+  overlay.addEventListener('click', event => { if (event.target === overlay) closeDialog(); });
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeDialog();
+    else if (/^\d$/.test(event.key)) press(event.key);
+    else if (event.key === '.') press('.');
+    else if (event.key === '+') press('+');
+    else if (event.key === '-') press('−');
+    else if (event.key === '*') press('×');
+    else if (event.key === '/') { event.preventDefault(); press('÷'); }
+    else if (event.key === 'Enter' || event.key === '=') press('=');
+    else if (event.key === 'Backspace') press('backspace');
+    else if (event.key === 'Escape') closeDialog();
+  });
+
+  dialog.append(title, display, keys, close);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  update();
+  keys.querySelector('button').focus();
+}
+
+$('openCalculator').addEventListener('click', openCalculator);
 
 /* Finestra casuale con animazione a ogni rilancio */
 function openRandomDialog(type) {
